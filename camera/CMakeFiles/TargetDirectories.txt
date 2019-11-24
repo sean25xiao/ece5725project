@@ -1,0 +1,3 @@
+/home/pi/Desktop/ece5725project/camera/CMakeFiles/rebuild_cache.dir
+/home/pi/Desktop/ece5725project/camera/CMakeFiles/camera_detection.dir
+/home/pi/Desktop/ece5725project/camera/CMakeFiles/edit_cache.dir
