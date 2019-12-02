@@ -67,6 +67,7 @@ Mat process_ncc (Mat* frame, Mat* temp, Mat* original_frame)
     
     return after_ncc_frame;
 }
+
 int main(int argc, char *argv[])
 {
    VideoCapture capture;
