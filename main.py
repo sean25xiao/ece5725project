@@ -37,15 +37,16 @@ r=0
 PWA = 12
 AI1 = 18
 AI2 = 19
-#PWB = 18
-#BI1 = 23
-#BI2 = 24
+PWB = 13
+BI1 = 22
+BI2 = 23
 Standby = 25
 Freq = 50
 # end of define GPIO pins
 
 def left_motor_thread():
       global l
+      global exit_flag
      # print("START")
       rpi_dc_lib.TB6612FNGDc.standby(Standby, True)
       #print("motorone tests")
@@ -92,12 +93,14 @@ def left_motor_thread():
                               print("backward duty cycle of 100")
                   elif(left_motor["mode"]==0):
                         MotorOne.stop(0)
-                        print("stop(left)")
+                       # print("stop(left)")
             else:
-                  exit()
+                  #exit()
+                  quit()
 
 def right_motor_thread():
       global r
+      global exit_flag
       #print("START")
       #rpi_dc_lib.TB6612FNGDc.standby(Standby, True)                             might not need this??
       #print("motorone tests")
@@ -144,34 +147,51 @@ def right_motor_thread():
                               print("backward duty cycle of 100")
                   elif(right_motor["mode"]==0):
                         MotorTwo.stop(0)
-                        print("stop(right)")
+                       # print("stop(right)")
             else:
-                  exit()
+                  #exit()
+                  quit()
+                  #print("check")
 
 def keyboard_pressed():
       global l
       global r
+      global exit_flag
       print("checking keyboard")
       while True:
         ch=getchar()
         if(ch=='w'):
             print("w is detected")
-            left_motor["mode"]=1               #mode 1=forward
-            right_motor["mode"]=1              #mode 1=forward
-            print("now the left values are",left_motor.values())
-            print("now the right values are",right_motor.values())
+            if (left_motor["mode"]==2):
+                  left_motor["mode"]=0               #mode 1=forward
+                  right_motor["mode"]=0              #mode 1=forward
+                  time.sleep(1)
+                  left_motor["mode"]=1               #mode 1=forward
+                  right_motor["mode"]=1              #mode 1=forward
+            else:
+                  left_motor["mode"]=1               #mode 1=forward
+                  right_motor["mode"]=1              #mode 1=forward
+                  print("now the left values are",left_motor.values())
+                  print("now the right values are",right_motor.values())
         elif(ch=='x'):
             print("x is detected")
-            left_motor["mode"]=2               #mode 2=backward
-            right_motor['mode']=2              #mode 2=backweard
-            print("now the left values are",left_motor.values())
-            print("now the right values are",right_motor.values())
+            if (left_motor["mode"]==1):
+                  left_motor["mode"]=0               #mode 2=backward
+                  right_motor['mode']=0              #mode 2=backweard
+                  time.sleep(1)
+                  left_motor["mode"]=2               #mode 2=backward
+                  right_motor['mode']=2              #mode 2=backweard
+            else:
+                  left_motor["mode"]=2               #mode 2=backward
+                  right_motor['mode']=2              #mode 2=backweard
+                  print("now the left values are",left_motor.values())
+                  print("now the right values are",right_motor.values())
         elif(ch=='a'):
             print("a is detected")
             l=1
         elif(ch=='d'):
             print("d is detected")
-            rightturn_flag=1
+            r=1
         elif(ch=='i'):
             print("i is detected")
             if (left_motor.get("speed")>=5):     #if at maxium speed
@@ -199,9 +219,19 @@ def keyboard_pressed():
             right_motor["speed"]=0
             right_motor["mode"]=0
         elif(ch=='c'):
-            print("exit the program")
-            exit_flag=1
-            os._exit(1)
+              print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+              left_motor["speed"]=0
+              left_motor["mode"]=0
+              right_motor["speed"]=0
+              right_motor["mode"]=0
+              #MotorOne = rpi_dc_lib.TB6612FNGDc(AI1 ,AI2 ,PWA ,Freq,False, "motor_one")    # Motorssetup
+              #MotorTwo = rpi_dc_lib.TB6612FNGDc(BI1 ,BI2 ,PWB ,Freq ,False, "motor_two")   
+              print("exit the program")
+              exit_flag=1
+              rpi_dc_lib.TB6612FNGDc.standby(Standby,False)
+              GPIO.cleanup()
+              print("done!")
+              os._exit(1)
         else:
             print("not w")
 
