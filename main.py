@@ -31,8 +31,8 @@ global turnsleep
 turnsleep=0.5
 global l
 l=0
-global rightturn_flag
-rightturn_flag=0
+global r
+r=0
 #define motor GPIO pins and duty cycle
 PWA = 12
 AI1 = 18
@@ -46,21 +46,19 @@ Freq = 50
 
 def left_motor_thread():
       global l
-      print("START")
+     # print("START")
       rpi_dc_lib.TB6612FNGDc.standby(Standby, True)
-      print("motorone tests")
+      #print("motorone tests")
       MotorOne = rpi_dc_lib.TB6612FNGDc(AI1 ,AI2 ,PWA ,Freq,True, "motor_one")    # Motorssetup
       while True:
             if (exit_flag==0):
-                  #global leftturn_flag
                   if (l==1):
                         MotorOne.stop(0)
                         print("turn left(left)")
                         time.sleep(turnsleep)
                         print("turn finished")
-                        #global leftturn_flag
                         l=0
-                  elif (left_motor["mode"]==1):                                                 #forward
+                  elif (left_motor["mode"]==1):                                  #forward
                         if (left_motor["speed"]==1):
                               MotorOne.forward(20)
                               print("forward duty cycle of 20")
@@ -76,7 +74,7 @@ def left_motor_thread():
                         elif(left_motor["speed"]==5):
                               MotorOne.forward(100)
                               print("forward duty cycle of 100")
-                  elif(left_motor["mode"]==2):                                         #backward
+                  elif(left_motor["mode"]==2):                                   #backward
                         if (left_motor["speed"]==1):
                               MotorOne.backward(20)
                               print("backward duty cycle of 20")
@@ -92,21 +90,67 @@ def left_motor_thread():
                         elif(left_motor["speed"]==5):
                               MotorOne.backward(100)
                               print("backward duty cycle of 100")
-                 # elif(left_motor["mode"]==3):
-                  #      MotorOne.stop(0)
-                   #     print("turn left(left)")
-                   #     time.sleep(turnsleep)
-                   #     print("turn finished")
-                  #elif(left_motor["mode"]==4):
-                  #      print("turn right (left)")
                   elif(left_motor["mode"]==0):
                         MotorOne.stop(0)
                         print("stop(left)")
             else:
                   exit()
 
+def right_motor_thread():
+      global r
+      #print("START")
+      #rpi_dc_lib.TB6612FNGDc.standby(Standby, True)                             might not need this??
+      #print("motorone tests")
+      MotorTwo = rpi_dc_lib.TB6612FNGDc(BI1 ,BI2 ,PWB ,Freq ,True, "motor_two")   #Motorsetup
+      while True:
+            if (exit_flag==0):
+                  if (r==1):
+                        MotorTwo.stop(0)
+                        print("turn right(right)")
+                        time.sleep(turnsleep)
+                        print("turn finished")
+                        r=0
+                  elif (right_motor["mode"]==1):                                  #forward
+                        if (right_motor["speed"]==1):
+                              MotorTwo.forward(20)
+                              print("forward duty cycle of 20")
+                        elif(right_motor["speed"]==2):
+                              MotorTwo.forward(40)
+                              print("forward duty cycle of 40")
+                        elif(right_motor["speed"]==3):
+                              MotorTwo.forward(60)
+                              print("forward duty cycle of 60")
+                        elif(right_motor["speed"]==4):
+                              MotorTwo.forward(80)
+                              print("forward duty cycle of 80")
+                        elif(right_motor["speed"]==5):
+                              MotorTwo.forward(100)
+                              print("forward duty cycle of 100")
+                  elif(right_motor["mode"]==2):                                   #backward
+                        if (right_motor["speed"]==1):
+                              MotorTwo.backward(20)
+                              print("backward duty cycle of 20")
+                        elif(right_motor["speed"]==2):
+                              MotorTwo.backward(40)
+                              print("backward duty cycle of 40")
+                        elif(right_motor["speed"]==3):
+                              MotorTwo.backward(60)
+                              print("backward duty cycle of 60")
+                        elif(right_motor["speed"]==4):
+                              MotorTwo.backward(80)
+                              print("backward duty cycle of 80")
+                        elif(right_motor["speed"]==5):
+                              MotorTwo.backward(100)
+                              print("backward duty cycle of 100")
+                  elif(right_motor["mode"]==0):
+                        MotorTwo.stop(0)
+                        print("stop(right)")
+            else:
+                  exit()
+
 def keyboard_pressed():
       global l
+      global r
       print("checking keyboard")
       while True:
         ch=getchar()
@@ -125,27 +169,29 @@ def keyboard_pressed():
         elif(ch=='a'):
             print("a is detected")
             l=1
-            #left_motor["mode"]=3              
-            #right_motor["mode"]=3
         elif(ch=='d'):
             print("d is detected")
             rightturn_flag=1
-            #left_motor["mode"]=4            
-            #right_motor["mode"]=4
         elif(ch=='i'):
             print("i is detected")
-            left_tmp=left_motor.get("speed")+1
-            right_tmp=right_motor.get("speed")+1
-            left_motor["speed"]=left_tmp
-            right_motor["speed"]=right_tmp
-            print("now the left values are",left_motor.values())
-            print("now the right values are",right_motor.values())
+            if (left_motor.get("speed")>=5):     #if at maxium speed
+                pass
+            else:
+                left_tmp=left_motor.get("speed")+1
+                right_tmp=right_motor.get("speed")+1
+                left_motor["speed"]=left_tmp
+                right_motor["speed"]=right_tmp
+                print("now the left values are",left_motor.values())
+                print("now the right values are",right_motor.values())
         elif(ch=='j'):
             print("j is detected")
-            left_tmp=left_motor.get("speed")-1
-            right_tmp=right_motor.get("speed")-1
-            left_motor["speed"]=left_tmp
-            right_motor["speed"]=right_tmp
+            if (left_motor.get("speed")<=0):     #if at minimum speed
+                pass
+            else:
+                left_tmp=left_motor.get("speed")-1
+                right_tmp=right_motor.get("speed")-1
+                left_motor["speed"]=left_tmp
+                right_motor["speed"]=right_tmp
         elif(ch=='s'):                         #stop mode set to 0
             print("s is detected")
             left_motor["speed"]=0
@@ -160,9 +206,11 @@ def keyboard_pressed():
             print("not w")
 
 #key_pressed = Thread(target=keyboard_pressed, args=(i,))
-print("start of the program")
+#print("start of the program")
 key_pressed = Thread(target=keyboard_pressed)
-t1=Thread(target=left_motor_thread)
-print("creat 2 threads")
+left_control= Thread(target=left_motor_thread)
+right_control=Thread(target=right_motor_thread)
+
 key_pressed.start()
-t1.start()
+left_control.start()
+right_control.start()
