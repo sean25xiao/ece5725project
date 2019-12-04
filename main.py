@@ -33,6 +33,8 @@ global l
 l=0
 global r
 r=0
+global modes
+modes=0
 #define motor GPIO pins and duty cycle
 PWA = 12
 AI1 = 18
@@ -47,19 +49,19 @@ Freq = 50
 def left_motor_thread():
       global l
       global exit_flag
-     # print("START")
+      global modes
       rpi_dc_lib.TB6612FNGDc.standby(Standby, True)
-      #print("motorone tests")
       MotorOne = rpi_dc_lib.TB6612FNGDc(AI1 ,AI2 ,PWA ,Freq,True, "motor_one")    # Motorssetup
       while True:
             if (exit_flag==0):
-                  if (l==1):
+                if (modes==0):
+                    if (l==1):
                         MotorOne.stop(0)
                         print("turn left(left)")
                         time.sleep(turnsleep)
                         print("turn finished")
                         l=0
-                  elif (left_motor["mode"]==1):                                  #forward
+                    elif (left_motor["mode"]==1):                                  #forward
                         if (left_motor["speed"]==1):
                               MotorOne.forward(20)
                               print("forward duty cycle of 20")
@@ -75,7 +77,7 @@ def left_motor_thread():
                         elif(left_motor["speed"]==5):
                               MotorOne.forward(100)
                               print("forward duty cycle of 100")
-                  elif(left_motor["mode"]==2):                                   #backward
+                    elif(left_motor["mode"]==2):                                   #backward
                         if (left_motor["speed"]==1):
                               MotorOne.backward(20)
                               print("backward duty cycle of 20")
@@ -91,29 +93,28 @@ def left_motor_thread():
                         elif(left_motor["speed"]==5):
                               MotorOne.backward(100)
                               print("backward duty cycle of 100")
-                  elif(left_motor["mode"]==0):
+                    elif(left_motor["mode"]==0):
                         MotorOne.stop(0)
-                       # print("stop(left)")
+                else:
+                    print("in mode 2(left)")
             else:
-                  #exit()
                   quit()
 
 def right_motor_thread():
       global r
       global exit_flag
-      #print("START")
-      #rpi_dc_lib.TB6612FNGDc.standby(Standby, True)                             might not need this??
-      #print("motorone tests")
+      global modes
       MotorTwo = rpi_dc_lib.TB6612FNGDc(BI1 ,BI2 ,PWB ,Freq ,True, "motor_two")   #Motorsetup
       while True:
             if (exit_flag==0):
-                  if (r==1):
+                if(modes==0):
+                    if (r==1):
                         MotorTwo.stop(0)
                         print("turn right(right)")
                         time.sleep(turnsleep)
                         print("turn finished")
                         r=0
-                  elif (right_motor["mode"]==1):                                  #forward
+                    elif (right_motor["mode"]==1):                                  #forward
                         if (right_motor["speed"]==1):
                               MotorTwo.forward(20)
                               print("forward duty cycle of 20")
@@ -129,7 +130,7 @@ def right_motor_thread():
                         elif(right_motor["speed"]==5):
                               MotorTwo.forward(100)
                               print("forward duty cycle of 100")
-                  elif(right_motor["mode"]==2):                                   #backward
+                    elif(right_motor["mode"]==2):                                   #backward
                         if (right_motor["speed"]==1):
                               MotorTwo.backward(20)
                               print("backward duty cycle of 20")
@@ -145,18 +146,18 @@ def right_motor_thread():
                         elif(right_motor["speed"]==5):
                               MotorTwo.backward(100)
                               print("backward duty cycle of 100")
-                  elif(right_motor["mode"]==0):
+                     elif(right_motor["mode"]==0):
                         MotorTwo.stop(0)
-                       # print("stop(right)")
+                else:
+                    print("in mode 2(right)")
             else:
-                  #exit()
                   quit()
-                  #print("check")
 
 def keyboard_pressed():
       global l
       global r
       global exit_flag
+      global modes
       print("checking keyboard")
       while True:
         ch=getchar()
@@ -218,6 +219,12 @@ def keyboard_pressed():
             left_motor["mode"]=0
             right_motor["speed"]=0
             right_motor["mode"]=0
+        elif(ch=='m'):
+            print("m is detected")
+            if (modes==0):
+                modes=1
+            else:
+                modes=0
         elif(ch=='c'):
               print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
               left_motor["speed"]=0
@@ -225,7 +232,7 @@ def keyboard_pressed():
               right_motor["speed"]=0
               right_motor["mode"]=0
               #MotorOne = rpi_dc_lib.TB6612FNGDc(AI1 ,AI2 ,PWA ,Freq,False, "motor_one")    # Motorssetup
-              #MotorTwo = rpi_dc_lib.TB6612FNGDc(BI1 ,BI2 ,PWB ,Freq ,False, "motor_two")   
+              #MotorTwo = rpi_dc_lib.TB6612FNGDc(BI1 ,BI2 ,PWB ,Freq ,False, "motor_two")
               print("exit the program")
               exit_flag=1
               rpi_dc_lib.TB6612FNGDc.standby(Standby,False)
@@ -235,8 +242,6 @@ def keyboard_pressed():
         else:
             print("not w")
 
-#key_pressed = Thread(target=keyboard_pressed, args=(i,))
-#print("start of the program")
 key_pressed = Thread(target=keyboard_pressed)
 left_control= Thread(target=left_motor_thread)
 right_control=Thread(target=right_motor_thread)
