@@ -146,7 +146,7 @@ def right_motor_thread():
                         elif(right_motor["speed"]==5):
                               MotorTwo.backward(100)
                               print("backward duty cycle of 100")
-                     elif(right_motor["mode"]==0):
+                    elif(right_motor["mode"]==0):
                         MotorTwo.stop(0)
                 else:
                     print("in mode 2(right)")
@@ -158,6 +158,8 @@ def keyboard_pressed():
       global r
       global exit_flag
       global modes
+      global left_motor
+      global right_motor
       print("checking keyboard")
       while True:
         ch=getchar()
@@ -225,6 +227,8 @@ def keyboard_pressed():
                 modes=1
             else:
                 modes=0
+                left_motor={'speed':0,'mode':0}                    #initilize motor status
+                right_motor={'speed':0,'mode':0}
         elif(ch=='c'):
               print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
               left_motor["speed"]=0
