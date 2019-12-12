@@ -18,6 +18,7 @@ using namespace std;
 #define SIGMAX 15
 #define SIGMAY 15
 #define LAP_DEPTH 3
+#define DETECT_THRESHOLD 0.41
 
 Mat process_resize (Mat* frame)
 {
@@ -57,13 +58,15 @@ Mat process_ncc (Mat* frame, Mat* temp, Mat* original_frame)
     
     minMaxLoc(after_ncc_frame, &minValue, &maxValue, &minLocation, &maxLocation, Mat());
     matchLocation = maxLocation;
-    if (maxValue > 0.36)
+    if (maxValue > DETECT_THRESHOLD)
     {
        rectangle(after_ncc_frame, matchLocation, Point(matchLocation.x + (*temp).cols, matchLocation.y + (*temp).rows), Scalar::all(0), 2, 8, 0);
        rectangle((*original_frame), matchLocation, Point(matchLocation.x + (*temp).cols, matchLocation.y + (*temp).rows), Scalar::all(0), 2, 8, 0);
+       system("cd /home/pi/Desktop/ece5725project/camera | ./a.out &");
+       cout << "maxValue is " << maxValue << endl;
+
     }
-    cout << "maxValue is " << maxValue << endl;
-    imshow("resized_frame", (*original_frame));
+    //imshow("resized_frame", (*original_frame));
     
     return after_ncc_frame;
 }
@@ -85,10 +88,11 @@ int main(int argc, char *argv[])
    const char* test_window = "Template Image";
    namedWindow(test_window, CV_WINDOW_AUTOSIZE);
    
-   temp1 = imread("/home/pi/Desktop/ece5725project/camera/stop_sign.jpg");
+   temp1 = imread("/home/pi/Desktop/ece5725project/camera/stop_sign_4.jpg");
    resize(temp1, resized_temp1, Size(RESIZE_TEMP_WIDTH, RESIZE_TEMP_HEIGHT));
    blurred_temp1 = process_blur(&resized_temp1);
    laplacian_temp1 = process_laplacian(&blurred_temp1);
+   //imshow("tmpelate", laplacian_temp1);
    
    
    while (1)
@@ -98,12 +102,17 @@ int main(int argc, char *argv[])
         break;
       
       resized_frame = process_resize(&original_frame);      
-      blurred_frame = process_blur(&resized_frame);      
-      laplacian_frame = process_laplacian(&blurred_frame);
+      //blurred_frame = process_blur(&resized_frame);      
+      laplacian_frame = process_laplacian(&resized_frame);
       result_frame = process_ncc(&laplacian_frame, &laplacian_temp1, &resized_frame);
       
-      imshow("result_frame", result_frame);
-      //imshow("resized frame", resized_frame);
+      //imshow("result_frame", result_frame);
+      imshow("resized frame", resized_frame);
+      imshow("original frame", original_frame);
+      imshow("laplacian_frame", laplacian_frame);
+      imshow("result frame", result_frame);
       waitKey(1);
     }
+    capture.release();
+    return 0;
 }  
